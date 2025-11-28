@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bảng Tuần Hoàn Các Nguyên Tố Hóa Học</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* * =========================================
+         * PHẦN 1: CSS (STYLE)
+         * =========================================
+         */
+        :root {
+            --bg-color: #121212;
+            --text-color: #ffffff;
+            --modal-bg: #1e1e1e;
+            --highlight: #00d4ff;
+            
+            /* Màu nhóm nguyên tố */
+            --alkali: #ff6b6b;            /* Kim loại kiềm */
+            --alkaline-earth: #ff9f43;    /* Kiềm thổ */
+            --transition: #feca57;        /* Chuyển tiếp */
+            --post-transition: #48dbfb;   /* Kim loại yếu */
+            --metalloid: #1dd1a1;         /* Á kim */
+            --reactive-nonmetal: #5f27cd; /* Phi kim khác */
+            --noble-gas: #54a0ff;         /* Khí hiếm */
+            --lanthanide: #ff9ff3;        /* Lanthanides */
+            --actinide: #9c88ff;          /* Actinides */
+            --unknown: #8395a7;           /* Chưa rõ */
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--highlight);
+        }
+
+        /* Container cho bảng có thanh cuộn ngang trên mobile */
+        .table-container {
+            width: 100%;
+            max-width: 1300px;
+            overflow-x: auto;
+            padding-bottom: 20px;
+        }
+
+        /* Lưới Bảng Tuần Hoàn */
+        .periodic-table {
+            display: grid;
+            grid-template-columns: repeat(18, 60px); /* 18 cột */
+            grid-template-rows: repeat(10, 60px);    /* 7 chu kỳ + khoảng trống + 2 họ Lantan/Actini */
+            gap: 4px;
+            min-width: 1150px; /* Đảm bảo bảng không bị nát trên mobile */
+            margin: 0 auto;
+        }
+
+        /* Ô nguyên tố */
+        .element {
+            background-color: #2d3436;
+            border: 1px solid #444;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s ease; /* Smooth transition cho mọi thuộc tính */
+            position: relative;
+            user-select: none;
+        }
+
+        .element:hover {
+            transform: scale(1.15);
+            z-index: 10;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+            border-color: #fff;
+        }
+
+        /* --- STYLES CHO CHẾ ĐỘ LỌC (FILTER MODE) --- */
+        
+        /* Khi bảng đang ở chế độ lọc, các ô KHÔNG thuộc nhóm được chọn */
+        .periodic-table.filtering .element.dimmed {
+            background-color: #ffffff !important; /* Đổi thành màu trắng */
+            opacity: 0.1; /* Làm mờ đi để không chói */
+            border-color: #333;
+            transform: scale(0.9);
+            filter: grayscale(100%); /* Mất màu */
+            pointer-events: none; /* Không cho click khi đang mờ */
+        }
+
+        /* Các ô thuộc nhóm ĐƯỢC CHỌN */
+        .periodic-table.filtering .element.highlighted {
+            opacity: 1;
+            transform: scale(1.1);
+            z-index: 5;
+            box-shadow: 0 0 20px currentColor; /* Phát sáng theo màu chữ (currentColor) */
+            border-width: 2px;
+            background-color: #2d3436; /* Giữ nền tối để nổi bật chữ màu */
+        }
+
+        /* Nội dung bên trong ô */
+        .at-num { font-size: 0.65rem; position: absolute; top: 2px; left: 4px; opacity: 0.8; }
+        .symbol { font-size: 1.2rem; font-weight: bold; margin-top: 4px; }
+        .name { font-size: 0.55rem; text-align: center; white-space: nowrap; overflow: hidden; max-width: 95%; opacity: 0.9; }
+
+        /* Định nghĩa màu sắc theo nhóm */
+        .cat-alkali-metal { background-color: rgba(255, 107, 107, 0.2); border-color: var(--alkali); color: var(--alkali); }
+        .cat-alkaline-earth-metal { background-color: rgba(255, 159, 67, 0.2); border-color: var(--alkaline-earth); color: var(--alkaline-earth); }
+        .cat-transition-metal { background-color: rgba(254, 202, 87, 0.2); border-color: var(--transition); color: var(--transition); }
+        .cat-post-transition-metal { background-color: rgba(72, 219, 251, 0.2); border-color: var(--post-transition); color: var(--post-transition); }
+        .cat-metalloid { background-color: rgba(29, 209, 161, 0.2); border-color: var(--metalloid); color: var(--metalloid); }
+        .cat-reactive-nonmetal { background-color: rgba(95, 39, 205, 0.2); border-color: var(--reactive-nonmetal); color: var(--reactive-nonmetal); }
+        .cat-noble-gas { background-color: rgba(84, 160, 255, 0.2); border-color: var(--noble-gas); color: var(--noble-gas); }
+        .cat-lanthanide { background-color: rgba(255, 159, 243, 0.2); border-color: var(--lanthanide); color: var(--lanthanide); }
+        .cat-actinide { background-color: rgba(156, 136, 255, 0.2); border-color: var(--actinide); color: var(--actinide); }
+        .cat-unknown { background-color: rgba(131, 149, 167, 0.2); border-color: var(--unknown); color: var(--unknown); }
+
+        /* Chú thích màu sắc (Legend) */
+        .legend {
+            margin-top: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            max-width: 1000px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            font-size: 0.8rem;
+            margin-right: 10px;
+            cursor: pointer; /* Biến thành dạng click được */
+            padding: 5px 10px;
+            border-radius: 20px;
+            border: 1px solid transparent;
+            transition: all 0.2s;
+            user-select: none;
+        }
+
+        .legend-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Khi một mục chú thích đang được chọn */
+        .legend-item.active-legend {
+            background-color: rgba(255, 255, 255, 0.15);
+            border-color: #fff;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+        }
+
+        /* Làm mờ các mục chú thích KHÔNG được chọn khi đang lọc */
+        .legend.filtering .legend-item:not(.active-legend) {
+            opacity: 0.4;
+        }
+
+        .color-box {
+            width: 15px;
+            height: 15px;
+            margin-right: 5px;
+            border-radius: 3px;
+        }
+
+        /* --- MODAL (POPUP) STYLE --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+
+        .modal-content {
+            background: var(--modal-bg);
+            width: 90%;
+            max-width: 500px;
+            border-radius: 12px;
+            padding: 25px;
+            position: relative;
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border: 1px solid #333;
+        }
+
+        .modal-overlay.active .modal-content { transform: translateY(0); }
+
+        .close-btn {
+            position: absolute;
+            top: 15px; right: 15px;
+            background: none; border: none;
+            color: #fff; font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        /* Modal Layout */
+        .modal-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 15px;
+        }
+
+        .modal-big-symbol {
+            width: 80px; height: 80px;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 2.5rem; font-weight: bold;
+            border: 2px solid #fff;
+            border-radius: 8px;
+            margin-right: 20px;
+            background: rgba(255,255,255,0.05);
+        }
+
+        .modal-title h2 { font-size: 1.8rem; margin-bottom: 5px; }
+        .modal-title p { color: #aaa; font-style: italic; }
+
+        .modal-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .info-item { background: #2a2a2a; padding: 10px; border-radius: 6px; }
+        .info-label { display: block; font-size: 0.75rem; color: #888; margin-bottom: 3px; }
+        .info-value { font-size: 0.95rem; font-weight: 500; }
+
+        .note-section { margin-top: 15px; }
+        .note-section label { display: block; margin-bottom: 8px; font-weight: bold; color: var(--highlight); }
+        textarea {
+            width: 100%;
+            height: 80px;
+            background: #121212;
+            border: 1px solid #444;
+            color: #fff;
+            padding: 10px;
+            border-radius: 6px;
+            resize: none;
+            font-family: inherit;
+        }
+        textarea:focus { outline: none; border-color: var(--highlight); }
+
+        .save-btn {
+            margin-top: 10px;
+            padding: 8px 20px;
+            background: var(--highlight);
+            color: #000;
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            float: right;
+        }
+        .save-btn:hover { filter: brightness(1.1); }
+
+    </style>
+</head>
+<body>
+
+    <h1>Bảng Tuần Hoàn Nguyên Tố Hóa Học</h1>
+
+    <div class="table-container">
+        <!-- Bảng nguyên tố sẽ được tạo bởi JS tại đây -->
+        <div class="periodic-table" id="periodicTable"></div>
+    </div>
+
+    <!-- Chú thích màu (Legend) -->
+    <div class="legend" id="legend"></div>
+
+    <!-- POPUP MODAL -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeModal()">&times;</button>
+            
+            <div class="modal-header">
+                <div class="modal-big-symbol" id="mSymbol">Fe</div>
+                <div class="modal-title">
+                    <h2 id="mNameLatin">Iron</h2>
+                    <p id="mNameVN">Sắt</p>
+                </div>
+            </div>
+
+            <div class="modal-grid">
+                <div class="info-item">
+                    <span class="info-label">Số hiệu nguyên tử</span>
+                    <span class="info-value" id="mAtomicNum">26</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Nguyên tử khối</span>
+                    <span class="info-value" id="mMass">55.845</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Cấu hình Electron</span>
+                    <span class="info-value" id="mElectron">[Ar] 3d6 4s2</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Độ âm điện</span>
+                    <span class="info-value" id="mElectroneg">1.83</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Nóng chảy / Sôi (°C)</span>
+                    <span class="info-value" id="mTemp">1538 / 2862</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Loại nguyên tố</span>
+                    <span class="info-value" id="mCategory" style="text-transform: capitalize;">Kim loại chuyển tiếp</span>
+                </div>
+            </div>
+
+            <div class="note-section">
+                <label>Ghi chú cá nhân:</label>
+                <textarea id="userNote" placeholder="Nhập ghi chú về nguyên tố này..."></textarea>
+                <button class="save-btn" onclick="saveNote()">Lưu Ghi Chú</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* * =========================================
+         * PHẦN 2: DỮ LIỆU JSON (DATA)
+         * =========================================
+         */
+        const elementsData = [
+            // Chu kỳ 1
+            { num: 1, sym: "H", name: "Hydrogen", name_vi: "Hiđrô", mass: "1.008", cat: "reactive-nonmetal", el_config: "1s1", en: "2.20", melt: "-259.1", boil: "-252.9" },
+            { num: 2, sym: "He", name: "Helium", name_vi: "Heli", mass: "4.0026", cat: "noble-gas", el_config: "1s2", en: "-", melt: "-272.2", boil: "-268.9" },
+            // Chu kỳ 2
+            { num: 3, sym: "Li", name: "Lithium", name_vi: "Liti", mass: "6.94", cat: "alkali-metal", el_config: "[He] 2s1", en: "0.98", melt: "180.5", boil: "1342" },
+            { num: 4, sym: "Be", name: "Beryllium", name_vi: "Berili", mass: "9.0122", cat: "alkaline-earth-metal", el_config: "[He] 2s2", en: "1.57", melt: "1287", boil: "2469" },
+            { num: 5, sym: "B", name: "Boron", name_vi: "Bo", mass: "10.81", cat: "metalloid", el_config: "[He] 2s2 2p1", en: "2.04", melt: "2075", boil: "4000" },
+            { num: 6, sym: "C", name: "Carbon", name_vi: "Cacbon", mass: "12.011", cat: "reactive-nonmetal", el_config: "[He] 2s2 2p2", en: "2.55", melt: "3550", boil: "4027" },
+            { num: 7, sym: "N", name: "Nitrogen", name_vi: "Nitơ", mass: "14.007", cat: "reactive-nonmetal", el_config: "[He] 2s2 2p3", en: "3.04", melt: "-210.1", boil: "-195.8" },
+            { num: 8, sym: "O", name: "Oxygen", name_vi: "Oxi", mass: "15.999", cat: "reactive-nonmetal", el_config: "[He] 2s2 2p4", en: "3.44", melt: "-218.8", boil: "-183.0" },
+            { num: 9, sym: "F", name: "Fluorine", name_vi: "Flo", mass: "18.998", cat: "reactive-nonmetal", el_config: "[He] 2s2 2p5", en: "3.98", melt: "-219.6", boil: "-188.1" },
+            { num: 10, sym: "Ne", name: "Neon", name_vi: "Neon", mass: "20.180", cat: "noble-gas", el_config: "[He] 2s2 2p6", en: "-", melt: "-248.6", boil: "-246.1" },
+            // Chu kỳ 3
+            { num: 11, sym: "Na", name: "Sodium", name_vi: "Natri", mass: "22.990", cat: "alkali-metal", el_config: "[Ne] 3s1", en: "0.93", melt: "97.8", boil: "883" },
+            { num: 12, sym: "Mg", name: "Magnesium", name_vi: "Magie", mass: "24.305", cat: "alkaline-earth-metal", el_config: "[Ne] 3s2", en: "1.31", melt: "650", boil: "1090" },
+            { num: 13, sym: "Al", name: "Aluminium", name_vi: "Nhôm", mass: "26.982", cat: "post-transition-metal", el_config: "[Ne] 3s2 3p1", en: "1.61", melt: "660.3", boil: "2470" },
+            { num: 14, sym: "Si", name: "Silicon", name_vi: "Silic", mass: "28.085", cat: "metalloid", el_config: "[Ne] 3s2 3p2", en: "1.90", melt: "1414", boil: "3265" },
+            { num: 15, sym: "P", name: "Phosphorus", name_vi: "Photpho", mass: "30.974", cat: "reactive-nonmetal", el_config: "[Ne] 3s2 3p3", en: "2.19", melt: "44.1", boil: "280.5" },
+            { num: 16, sym: "S", name: "Sulfur", name_vi: "Lưu huỳnh", mass: "32.06", cat: "reactive-nonmetal", el_config: "[Ne] 3s2 3p4", en: "2.58", melt: "115.2", boil: "444.6" },
+            { num: 17, sym: "Cl", name: "Chlorine", name_vi: "Clo", mass: "35.45", cat: "reactive-nonmetal", el_config: "[Ne] 3s2 3p5", en: "3.16", melt: "-101.5", boil: "-34.0" },
+            { num: 18, sym: "Ar", name: "Argon", name_vi: "Argon", mass: "39.948", cat: "noble-gas", el_config: "[Ne] 3s2 3p6", en: "-", melt: "-189.3", boil: "-185.8" },
+            // Chu kỳ 4
+            { num: 19, sym: "K", name: "Potassium", name_vi: "Kali", mass: "39.098", cat: "alkali-metal", el_config: "[Ar] 4s1", en: "0.82", melt: "63.5", boil: "759" },
+            { num: 20, sym: "Ca", name: "Calcium", name_vi: "Canxi", mass: "40.078", cat: "alkaline-earth-metal", el_config: "[Ar] 4s2", en: "1.00", melt: "842", boil: "1484" },
+            { num: 21, sym: "Sc", name: "Scandium", name_vi: "Scandi", mass: "44.956", cat: "transition-metal", el_config: "[Ar] 3d1 4s2", en: "1.36", melt: "1541", boil: "2836" },
+            { num: 22, sym: "Ti", name: "Titanium", name_vi: "Titan", mass: "47.867", cat: "transition-metal", el_config: "[Ar] 3d2 4s2", en: "1.54", melt: "1668", boil: "3287" },
+            { num: 23, sym: "V", name: "Vanadium", name_vi: "Vanadi", mass: "50.942", cat: "transition-metal", el_config: "[Ar] 3d3 4s2", en: "1.63", melt: "1910", boil: "3407" },
+            { num: 24, sym: "Cr", name: "Chromium", name_vi: "Crom", mass: "51.996", cat: "transition-metal", el_config: "[Ar] 3d5 4s1", en: "1.66", melt: "1907", boil: "2671" },
+            { num: 25, sym: "Mn", name: "Manganese", name_vi: "Mangan", mass: "54.938", cat: "transition-metal", el_config: "[Ar] 3d5 4s2", en: "1.55", melt: "1246", boil: "2061" },
+            { num: 26, sym: "Fe", name: "Iron", name_vi: "Sắt", mass: "55.845", cat: "transition-metal", el_config: "[Ar] 3d6 4s2", en: "1.83", melt: "1538", boil: "2862" },
+            { num: 27, sym: "Co", name: "Cobalt", name_vi: "Coban", mass: "58.933", cat: "transition-metal", el_config: "[Ar] 3d7 4s2", en: "1.88", melt: "1495", boil: "2927" },
+            { num: 28, sym: "Ni", name: "Nickel", name_vi: "Niken", mass: "58.693", cat: "transition-metal", el_config: "[Ar] 3d8 4s2", en: "1.91", melt: "1455", boil: "2730" },
+            { num: 29, sym: "Cu", name: "Copper", name_vi: "Đồng", mass: "63.546", cat: "transition-metal", el_config: "[Ar] 3d10 4s1", en: "1.90", melt: "1085", boil: "2562" },
+            { num: 30, sym: "Zn", name: "Zinc", name_vi: "Kẽm", mass: "65.38", cat: "transition-metal", el_config: "[Ar] 3d10 4s2", en: "1.65", melt: "419.5", boil: "907" },
+            { num: 31, sym: "Ga", name: "Gallium", name_vi: "Gali", mass: "69.723", cat: "post-transition-metal", el_config: "[Ar] 3d10 4s2 4p1", en: "1.81", melt: "29.76", boil: "2204" },
+            { num: 32, sym: "Ge", name: "Germanium", name_vi: "Gecmani", mass: "72.630", cat: "metalloid", el_config: "[Ar] 3d10 4s2 4p2", en: "2.01", melt: "938.3", boil: "2833" },
+            { num: 33, sym: "As", name: "Arsenic", name_vi: "Asen", mass: "74.922", cat: "metalloid", el_config: "[Ar] 3d10 4s2 4p3", en: "2.18", melt: "817", boil: "614" },
+            { num: 34, sym: "Se", name: "Selenium", name_vi: "Selen", mass: "78.971", cat: "reactive-nonmetal", el_config: "[Ar] 3d10 4s2 4p4", en: "2.55", melt: "221", boil: "685" },
+            { num: 35, sym: "Br", name: "Bromine", name_vi: "Brom", mass: "79.904", cat: "reactive-nonmetal", el_config: "[Ar] 3d10 4s2 4p5", en: "2.96", melt: "-7.2", boil: "58.8" },
+            { num: 36, sym: "Kr", name: "Krypton", name_vi: "Krypton", mass: "83.798", cat: "noble-gas", el_config: "[Ar] 3d10 4s2 4p6", en: "3.00", melt: "-157.4", boil: "-153.2" },
+            // Chu kỳ 5
+            { num: 37, sym: "Rb", name: "Rubidium", name_vi: "Rubidi", mass: "85.468", cat: "alkali-metal", el_config: "[Kr] 5s1", en: "0.82", melt: "39.3", boil: "688" },
+            { num: 38, sym: "Sr", name: "Strontium", name_vi: "Stronti", mass: "87.62", cat: "alkaline-earth-metal", el_config: "[Kr] 5s2", en: "0.95", melt: "777", boil: "1382" },
+            { num: 39, sym: "Y", name: "Yttrium", name_vi: "Yttri", mass: "88.906", cat: "transition-metal", el_config: "[Kr] 4d1 5s2", en: "1.22", melt: "1526", boil: "3336" },
+            { num: 40, sym: "Zr", name: "Zirconium", name_vi: "Ziconi", mass: "91.224", cat: "transition-metal", el_config: "[Kr] 4d2 5s2", en: "1.33", melt: "1855", boil: "4409" },
+            { num: 41, sym: "Nb", name: "Niobium", name_vi: "Niobi", mass: "92.906", cat: "transition-metal", el_config: "[Kr] 4d4 5s1", en: "1.6", melt: "2477", boil: "4744" },
+            { num: 42, sym: "Mo", name: "Molybdenum", name_vi: "Molipden", mass: "95.95", cat: "transition-metal", el_config: "[Kr] 4d5 5s1", en: "2.16", melt: "2623", boil: "4639" },
+            { num: 43, sym: "Tc", name: "Technetium", name_vi: "Tecneti", mass: "(98)", cat: "transition-metal", el_config: "[Kr] 4d5 5s2", en: "1.9", melt: "2157", boil: "4265" },
+            { num: 44, sym: "Ru", name: "Ruthenium", name_vi: "Rutheni", mass: "101.07", cat: "transition-metal", el_config: "[Kr] 4d7 5s1", en: "2.2", melt: "2334", boil: "4150" },
+            { num: 45, sym: "Rh", name: "Rhodium", name_vi: "Rodi", mass: "102.91", cat: "transition-metal", el_config: "[Kr] 4d8 5s1", en: "2.28", melt: "1964", boil: "3695" },
+            { num: 46, sym: "Pd", name: "Palladium", name_vi: "Paladi", mass: "106.42", cat: "transition-metal", el_config: "[Kr] 4d10", en: "2.20", melt: "1555", boil: "2963" },
+            { num: 47, sym: "Ag", name: "Silver", name_vi: "Bạc", mass: "107.87", cat: "transition-metal", el_config: "[Kr] 4d10 5s1", en: "1.93", melt: "961.8", boil: "2162" },
+            { num: 48, sym: "Cd", name: "Cadmium", name_vi: "Cadimi", mass: "112.41", cat: "transition-metal", el_config: "[Kr] 4d10 5s2", en: "1.69", melt: "321.1", boil: "767" },
+            { num: 49, sym: "In", name: "Indium", name_vi: "Indi", mass: "114.82", cat: "post-transition-metal", el_config: "[Kr] 4d10 5s2 5p1", en: "1.78", melt: "156.6", boil: "2072" },
+            { num: 50, sym: "Sn", name: "Tin", name_vi: "Thiếc", mass: "118.71", cat: "post-transition-metal", el_config: "[Kr] 4d10 5s2 5p2", en: "1.96", melt: "231.9", boil: "2602" },
+            { num: 51, sym: "Sb", name: "Antimony", name_vi: "Antimon", mass: "121.76", cat: "metalloid", el_config: "[Kr] 4d10 5s2 5p3", en: "2.05", melt: "630.6", boil: "1587" },
+            { num: 52, sym: "Te", name: "Tellurium", name_vi: "Telua", mass: "127.60", cat: "metalloid", el_config: "[Kr] 4d10 5s2 5p4", en: "2.1", melt: "449.5", boil: "988" },
+            { num: 53, sym: "I", name: "Iodine", name_vi: "Iốt", mass: "126.90", cat: "reactive-nonmetal", el_config: "[Kr] 4d10 5s2 5p5", en: "2.66", melt: "113.7", boil: "184.3" },
+            { num: 54, sym: "Xe", name: "Xenon", name_vi: "Xenon", mass: "131.29", cat: "noble-gas", el_config: "[Kr] 4d10 5s2 5p6", en: "2.60", melt: "-111.8", boil: "-108.1" },
+            // Chu kỳ 6
+            { num: 55, sym: "Cs", name: "Caesium", name_vi: "Xesi", mass: "132.91", cat: "alkali-metal", el_config: "[Xe] 6s1", en: "0.79", melt: "28.4", boil: "671" },
+            { num: 56, sym: "Ba", name: "Barium", name_vi: "Bari", mass: "137.33", cat: "alkaline-earth-metal", el_config: "[Xe] 6s2", en: "0.89", melt: "727", boil: "1897" },
+            { num: 57, sym: "La", name: "Lanthanum", name_vi: "Lantan", mass: "138.91", cat: "lanthanide", el_config: "[Xe] 5d1 6s2", en: "1.1", melt: "920", boil: "3464" },
+            { num: 58, sym: "Ce", name: "Cerium", name_vi: "Xeri", mass: "140.12", cat: "lanthanide", el_config: "[Xe] 4f1 5d1 6s2", en: "1.12", melt: "795", boil: "3443" },
+            { num: 59, sym: "Pr", name: "Praseodymium", name_vi: "Praseodimi", mass: "140.91", cat: "lanthanide", el_config: "[Xe] 4f3 6s2", en: "1.13", melt: "935", boil: "3130" },
+            { num: 60, sym: "Nd", name: "Neodymium", name_vi: "Neodimi", mass: "144.24", cat: "lanthanide", el_config: "[Xe] 4f4 6s2", en: "1.14", melt: "1024", boil: "3074" },
+            { num: 61, sym: "Pm", name: "Promethium", name_vi: "Prometi", mass: "(145)", cat: "lanthanide", el_config: "[Xe] 4f5 6s2", en: "-", melt: "1042", boil: "3000" },
+            { num: 62, sym: "Sm", name: "Samarium", name_vi: "Samari", mass: "150.36", cat: "lanthanide", el_config: "[Xe] 4f6 6s2", en: "1.17", melt: "1072", boil: "1794" },
+            { num: 63, sym: "Eu", name: "Europium", name_vi: "Europi", mass: "151.96", cat: "lanthanide", el_config: "[Xe] 4f7 6s2", en: "-", melt: "826", boil: "1529" },
+            { num: 64, sym: "Gd", name: "Gadolinium", name_vi: "Gadolini", mass: "157.25", cat: "lanthanide", el_config: "[Xe] 4f7 5d1 6s2", en: "1.20", melt: "1313", boil: "3273" },
+            { num: 65, sym: "Tb", name: "Terbium", name_vi: "Tecbi", mass: "158.93", cat: "lanthanide", el_config: "[Xe] 4f9 6s2", en: "-", melt: "1356", boil: "3230" },
+            { num: 66, sym: "Dy", name: "Dysprosium", name_vi: "Dysprosi", mass: "162.50", cat: "lanthanide", el_config: "[Xe] 4f10 6s2", en: "1.22", melt: "1407", boil: "2567" },
+            { num: 67, sym: "Ho", name: "Holmium", name_vi: "Holmi", mass: "164.93", cat: "lanthanide", el_config: "[Xe] 4f11 6s2", en: "1.23", melt: "1461", boil: "2720" },
+            { num: 68, sym: "Er", name: "Erbium", name_vi: "Erbi", mass: "167.26", cat: "lanthanide", el_config: "[Xe] 4f12 6s2", en: "1.24", melt: "1529", boil: "2868" },
+            { num: 69, sym: "Tm", name: "Thulium", name_vi: "Thuli", mass: "168.93", cat: "lanthanide", el_config: "[Xe] 4f13 6s2", en: "1.25", melt: "1545", boil: "1950" },
+            { num: 70, sym: "Yb", name: "Ytterbium", name_vi: "Ytterbi", mass: "173.05", cat: "lanthanide", el_config: "[Xe] 4f14 6s2", en: "-", melt: "824", boil: "1196" },
+            { num: 71, sym: "Lu", name: "Lutetium", name_vi: "Luteti", mass: "174.97", cat: "lanthanide", el_config: "[Xe] 4f14 5d1 6s2", en: "1.27", melt: "1663", boil: "3402" },
+            { num: 72, sym: "Hf", name: "Hafnium", name_vi: "Hafni", mass: "178.49", cat: "transition-metal", el_config: "[Xe] 4f14 5d2 6s2", en: "1.3", melt: "2233", boil: "4603" },
+            { num: 73, sym: "Ta", name: "Tantalum", name_vi: "Tantan", mass: "180.95", cat: "transition-metal", el_config: "[Xe] 4f14 5d3 6s2", en: "1.5", melt: "3017", boil: "5458" },
+            { num: 74, sym: "W", name: "Tungsten", name_vi: "Vonfram", mass: "183.84", cat: "transition-metal", el_config: "[Xe] 4f14 5d4 6s2", en: "2.36", melt: "3422", boil: "5555" },
+            { num: 75, sym: "Re", name: "Rhenium", name_vi: "Reni", mass: "186.21", cat: "transition-metal", el_config: "[Xe] 4f14 5d5 6s2", en: "1.9", melt: "3186", boil: "5596" },
+            { num: 76, sym: "Os", name: "Osmium", name_vi: "Osmi", mass: "190.23", cat: "transition-metal", el_config: "[Xe] 4f14 5d6 6s2", en: "2.2", melt: "3033", boil: "5012" },
+            { num: 77, sym: "Ir", name: "Iridium", name_vi: "Iridi", mass: "192.22", cat: "transition-metal", el_config: "[Xe] 4f14 5d7 6s2", en: "2.20", melt: "2446", boil: "4428" },
+            { num: 78, sym: "Pt", name: "Platinum", name_vi: "Platin", mass: "195.08", cat: "transition-metal", el_config: "[Xe] 4f14 5d9 6s1", en: "2.28", melt: "1768", boil: "3825" },
+            { num: 79, sym: "Au", name: "Gold", name_vi: "Vàng", mass: "196.97", cat: "transition-metal", el_config: "[Xe] 4f14 5d10 6s1", en: "2.54", melt: "1064", boil: "2970" },
+            { num: 80, sym: "Hg", name: "Mercury", name_vi: "Thủy ngân", mass: "200.59", cat: "transition-metal", el_config: "[Xe] 4f14 5d10 6s2", en: "2.00", melt: "-38.8", boil: "356.7" },
+            { num: 81, sym: "Tl", name: "Thallium", name_vi: "Tali", mass: "204.38", cat: "post-transition-metal", el_config: "[Xe] 4f14 5d10 6s2 6p1", en: "1.62", melt: "304", boil: "1473" },
+            { num: 82, sym: "Pb", name: "Lead", name_vi: "Chì", mass: "207.2", cat: "post-transition-metal", el_config: "[Xe] 4f14 5d10 6s2 6p2", en: "2.33", melt: "327.5", boil: "1749" },
+            { num: 83, sym: "Bi", name: "Bismuth", name_vi: "Bitmut", mass: "208.98", cat: "post-transition-metal", el_config: "[Xe] 4f14 5d10 6s2 6p3", en: "2.02", melt: "271.4", boil: "1564" },
+            { num: 84, sym: "Po", name: "Polonium", name_vi: "Poloni", mass: "(209)", cat: "post-transition-metal", el_config: "[Xe] 4f14 5d10 6s2 6p4", en: "2.0", melt: "254", boil: "962" },
+            { num: 85, sym: "At", name: "Astatine", name_vi: "Astatin", mass: "(210)", cat: "metalloid", el_config: "[Xe] 4f14 5d10 6s2 6p5", en: "2.2", melt: "302", boil: "337" },
+            { num: 86, sym: "Rn", name: "Radon", name_vi: "Radon", mass: "(222)", cat: "noble-gas", el_config: "[Xe] 4f14 5d10 6s2 6p6", en: "-", melt: "-71", boil: "-61.7" },
+            // Chu kỳ 7
+            { num: 87, sym: "Fr", name: "Francium", name_vi: "Franxi", mass: "(223)", cat: "alkali-metal", el_config: "[Rn] 7s1", en: "0.7", melt: "27", boil: "677" },
+            { num: 88, sym: "Ra", name: "Radium", name_vi: "Radi", mass: "(226)", cat: "alkaline-earth-metal", el_config: "[Rn] 7s2", en: "0.9", melt: "700", boil: "1737" },
+            { num: 89, sym: "Ac", name: "Actinium", name_vi: "Actini", mass: "(227)", cat: "actinide", el_config: "[Rn] 6d1 7s2", en: "1.1", melt: "1050", boil: "3198" },
+            { num: 90, sym: "Th", name: "Thorium", name_vi: "Thori", mass: "232.04", cat: "actinide", el_config: "[Rn] 6d2 7s2", en: "1.3", melt: "1750", boil: "4788" },
+            { num: 91, sym: "Pa", name: "Protactinium", name_vi: "Protactini", mass: "231.04", cat: "actinide", el_config: "[Rn] 5f2 6d1 7s2", en: "1.5", melt: "1568", boil: "4027" },
+            { num: 92, sym: "U", name: "Uranium", name_vi: "Urani", mass: "238.03", cat: "actinide", el_config: "[Rn] 5f3 6d1 7s2", en: "1.38", melt: "1132", boil: "4131" },
+            { num: 93, sym: "Np", name: "Neptunium", name_vi: "Neptuni", mass: "(237)", cat: "actinide", el_config: "[Rn] 5f4 6d1 7s2", en: "1.36", melt: "644", boil: "3902" },
+            { num: 94, sym: "Pu", name: "Plutonium", name_vi: "Plutoni", mass: "(244)", cat: "actinide", el_config: "[Rn] 5f6 7s2", en: "1.28", melt: "640", boil: "3228" },
+            { num: 95, sym: "Am", name: "Americium", name_vi: "Amerixi", mass: "(243)", cat: "actinide", el_config: "[Rn] 5f7 7s2", en: "1.3", melt: "1176", boil: "2011" },
+            { num: 96, sym: "Cm", name: "Curium", name_vi: "Curi", mass: "(247)", cat: "actinide", el_config: "[Rn] 5f7 6d1 7s2", en: "1.3", melt: "1340", boil: "3110" },
+            { num: 97, sym: "Bk", name: "Berkelium", name_vi: "Beckeli", mass: "(247)", cat: "actinide", el_config: "[Rn] 5f9 7s2", en: "1.3", melt: "986", boil: "-" },
+            { num: 98, sym: "Cf", name: "Californium", name_vi: "Californi", mass: "(251)", cat: "actinide", el_config: "[Rn] 5f10 7s2", en: "1.3", melt: "900", boil: "-" },
+            { num: 99, sym: "Es", name: "Einsteinium", name_vi: "Einsteini", mass: "(252)", cat: "actinide", el_config: "[Rn] 5f11 7s2", en: "1.3", melt: "860", boil: "-" },
+            { num: 100, sym: "Fm", name: "Fermium", name_vi: "Fermi", mass: "(257)", cat: "actinide", el_config: "[Rn] 5f12 7s2", en: "1.3", melt: "1527", boil: "-" },
+            { num: 101, sym: "Md", name: "Mendelevium", name_vi: "Mendelevi", mass: "(258)", cat: "actinide", el_config: "[Rn] 5f13 7s2", en: "1.3", melt: "827", boil: "-" },
+            { num: 102, sym: "No", name: "Nobelium", name_vi: "Nobeli", mass: "(259)", cat: "actinide", el_config: "[Rn] 5f14 7s2", en: "1.3", melt: "827", boil: "-" },
+            { num: 103, sym: "Lr", name: "Lawrencium", name_vi: "Lawrenxi", mass: "(266)", cat: "actinide", el_config: "[Rn] 5f14 7s2 7p1", en: "-", melt: "1627", boil: "-" },
+            { num: 104, sym: "Rf", name: "Rutherfordium", name_vi: "Rutherfordi", mass: "(267)", cat: "transition-metal", el_config: "[Rn] 5f14 6d2 7s2", en: "-", melt: "-", boil: "-" },
+            { num: 105, sym: "Db", name: "Dubnium", name_vi: "Dubni", mass: "(268)", cat: "transition-metal", el_config: "[Rn] 5f14 6d3 7s2", en: "-", melt: "-", boil: "-" },
+            { num: 106, sym: "Sg", name: "Seaborgium", name_vi: "Seaborgi", mass: "(269)", cat: "transition-metal", el_config: "[Rn] 5f14 6d4 7s2", en: "-", melt: "-", boil: "-" },
+            { num: 107, sym: "Bh", name: "Bohrium", name_vi: "Bohri", mass: "(270)", cat: "transition-metal", el_config: "[Rn] 5f14 6d5 7s2", en: "-", melt: "-", boil: "-" },
+            { num: 108, sym: "Hs", name: "Hassium", name_vi: "Hassi", mass: "(277)", cat: "transition-metal", el_config: "[Rn] 5f14 6d6 7s2", en: "-", melt: "-", boil: "-" },
+            { num: 109, sym: "Mt", name: "Meitnerium", name_vi: "Meitneri", mass: "(278)", cat: "unknown", el_config: "[Rn] 5f14 6d7 7s2", en: "-", melt: "-", boil: "-" },
+            { num: 110, sym: "Ds", name: "Darmstadtium", name_vi: "Darmstadti", mass: "(281)", cat: "unknown", el_config: "[Rn] 5f14 6d8 7s2", en: "-", melt: "-", boil: "-" },
+            { num: 111, sym: "Rg", name: "Roentgenium", name_vi: "Roentgeni", mass: "(282)", cat: "unknown", el_config: "[Rn] 5f14 6d9 7s2", en: "-", melt: "-", boil: "-" },
+            { num: 112, sym: "Cn", name: "Copernicium", name_vi: "Copernixi", mass: "(285)", cat: "transition-metal", el_config: "[Rn] 5f14 6d10 7s2", en: "-", melt: "-", boil: "-" },
+            { num: 113, sym: "Nh", name: "Nihonium", name_vi: "Nihoni", mass: "(286)", cat: "unknown", el_config: "[Rn] 5f14 6d10 7s2 7p1", en: "-", melt: "-", boil: "-" },
+            { num: 114, sym: "Fl", name: "Flerovium", name_vi: "Flerovi", mass: "(289)", cat: "post-transition-metal", el_config: "[Rn] 5f14 6d10 7s2 7p2", en: "-", melt: "-", boil: "-" },
+            { num: 115, sym: "Mc", name: "Moscovium", name_vi: "Moscovi", mass: "(290)", cat: "unknown", el_config: "[Rn] 5f14 6d10 7s2 7p3", en: "-", melt: "-", boil: "-" },
+            { num: 116, sym: "Lv", name: "Livermorium", name_vi: "Livermori", mass: "(293)", cat: "unknown", el_config: "[Rn] 5f14 6d10 7s2 7p4", en: "-", melt: "-", boil: "-" },
+            { num: 117, sym: "Ts", name: "Tennessine", name_vi: "Tennessine", mass: "(294)", cat: "unknown", el_config: "[Rn] 5f14 6d10 7s2 7p5", en: "-", melt: "-", boil: "-" },
+            { num: 118, sym: "Og", name: "Oganesson", name_vi: "Oganesson", mass: "(294)", cat: "unknown", el_config: "[Rn] 5f14 6d10 7s2 7p6", en: "-", melt: "-", boil: "-" }
+        ];
+
+        /* * =========================================
+         * PHẦN 3: JAVASCRIPT (LOGIC)
+         * =========================================
+         */
+        
+        // Cấu hình bảng đầy đủ (Dùng để map vị trí nếu thiếu dữ liệu chi tiết)
+        // Đây là hàm tiện ích để điền đầy đủ bảng cho bạn thấy giao diện hoàn chỉnh
+        function generateFullTableData() {
+            // Map vị trí cơ bản cho 118 nguyên tố
+            
+            let fullData = [];
+            
+            // Helper tìm xem data chi tiết đã có chưa
+            const getDetail = (n) => elementsData.find(e => e.num === n);
+
+            // Duyệt qua 118 số hiệu
+            for(let i=1; i<=118; i++) {
+                let existing = getDetail(i);
+                
+                // Tính toán vị trí (row, col)
+                let row = 0, col = 0;
+                
+                // Logic vị trí đơn giản hóa
+                // (Đây là logic "vẽ" lại vị trí chuẩn của bảng tuần hoàn)
+                if (i >= 57 && i <= 71) { row = 9; col = i - 57 + 4; } // Lanthanides
+                else if (i >= 89 && i <= 103) { row = 10; col = i - 89 + 4; } // Actinides
+                else {
+                    // Logic cơ bản cho các nhóm chính
+                    if(i==1) { row=1; col=1; }
+                    else if(i==2) { row=1; col=18; }
+                    else if(i<=10) { row=2; col= (i<=4) ? i-2 : i+8; }
+                    else if(i<=18) { row=3; col= (i<=12) ? i-10 : i; }
+                    else if(i<=36) { row=4; col= i-18; }
+                    else if(i<=54) { row=5; col= i-36; }
+                    else if(i==55 || i==56) { row=6; col= i-54; }
+                    else if(i>=72 && i<=86) { row=6; col= i-68; }
+                    else if(i==87 || i==88) { row=7; col= i-86; }
+                    else if(i>=104) { row=7; col= i-100; }
+                }
+
+                if(existing) {
+                    // Gán vị trí vào object data
+                    existing.col = col;
+                    existing.row = row;
+                    fullData.push(existing);
+                } else {
+                    // Fallback cực hạn nếu lỡ thiếu
+                    fullData.push({
+                        num: i, sym: "?", name: "Unknown", name_vi: "Chưa rõ",
+                        mass: "---", cat: "unknown", col: col, row: row,
+                        el_config: "...", en: "-", melt: "-", boil: "-"
+                    });
+                }
+            }
+            return fullData;
+        }
+
+        // Khởi tạo dữ liệu
+        const finalData = generateFullTableData();
+        const table = document.getElementById('periodicTable');
+        const modal = document.getElementById('modalOverlay');
+        const legendContainer = document.getElementById('legend');
+        let currentElementNum = null;
+        let activeFilterCategory = null; // Biến lưu trạng thái lọc hiện tại
+
+        // Render Bảng
+        function renderTable() {
+            finalData.forEach(el => {
+                const div = document.createElement('div');
+                div.classList.add('element');
+                div.classList.add(`cat-${el.cat}`);
+                div.dataset.category = el.cat; // Lưu loại nguyên tố vào dataset để lọc dễ hơn
+                
+                // Gán vị trí Grid
+                div.style.gridColumn = el.col;
+                div.style.gridRow = el.row;
+
+                // Nội dung HTML trong ô
+                div.innerHTML = `
+                    <span class="at-num">${el.num}</span>
+                    <span class="symbol">${el.sym}</span>
+                    <span class="name">${el.name_vi}</span> <!-- Hiển thị tên tiếng Việt -->
+                `;
+
+                // Sự kiện Click: Nếu đang lọc và ô bị mờ thì không làm gì (css pointer-events: none lo việc này)
+                div.onclick = () => openModal(el);
+
+                table.appendChild(div);
+            });
+            
+            createLegend();
+        }
+
+        // Render Chú thích (Legend)
+        function createLegend() {
+            const categories = [
+                {id: 'alkali-metal', name: 'Kim loại kiềm', color: 'var(--alkali)'},
+                {id: 'alkaline-earth-metal', name: 'Kiềm thổ', color: 'var(--alkaline-earth)'},
+                {id: 'transition-metal', name: 'KL Chuyển tiếp', color: 'var(--transition)'},
+                {id: 'post-transition-metal', name: 'KL Yếu', color: 'var(--post-transition)'},
+                {id: 'metalloid', name: 'Á kim', color: 'var(--metalloid)'},
+                {id: 'reactive-nonmetal', name: 'Phi kim/Halogen', color: 'var(--reactive-nonmetal)'},
+                {id: 'noble-gas', name: 'Khí hiếm', color: 'var(--noble-gas)'},
+                {id: 'lanthanide', name: 'Họ Lanthan', color: 'var(--lanthanide)'},
+                {id: 'actinide', name: 'Họ Actini', color: 'var(--actinide)'},
+                {id: 'unknown', name: 'Chưa rõ', color: 'var(--unknown)'}
+            ];
+
+            categories.forEach(cat => {
+                const item = document.createElement('div');
+                item.className = 'legend-item';
+                item.id = `legend-${cat.id}`; // ID để dễ style active
+                item.innerHTML = `
+                    <div class="color-box" style="background-color: ${cat.color}"></div>
+                    <span>${cat.name}</span>
+                `;
+                
+                // Thêm sự kiện click để lọc
+                item.onclick = () => toggleHighlight(cat.id);
+                
+                legendContainer.appendChild(item);
+            });
+        }
+
+        // Logic Lọc & Highlight (MỚI)
+        function toggleHighlight(categoryId) {
+            const allElements = document.querySelectorAll('.element');
+            const allLegendItems = document.querySelectorAll('.legend-item');
+
+            // Nếu click vào cái đang active -> Bỏ lọc (Reset)
+            if (activeFilterCategory === categoryId) {
+                activeFilterCategory = null;
+                
+                // Xóa các class trạng thái
+                table.classList.remove('filtering');
+                legendContainer.classList.remove('filtering');
+                
+                allElements.forEach(el => {
+                    el.classList.remove('dimmed', 'highlighted');
+                });
+                
+                allLegendItems.forEach(item => item.classList.remove('active-legend'));
+                
+                return;
+            }
+
+            // Nếu click vào cái mới -> Kích hoạt lọc
+            activeFilterCategory = categoryId;
+            
+            // Xóa active cũ và thiết lập active mới cho legend
+            allLegendItems.forEach(item => {
+                 item.classList.remove('active-legend');
+            });
+            document.getElementById(`legend-${categoryId}`).classList.add('active-legend');
+            
+            // Thêm class trạng thái cho container
+            table.classList.add('filtering');
+            legendContainer.classList.add('filtering');
+
+
+            // Xử lý các ô nguyên tố
+            allElements.forEach(el => {
+                if (el.dataset.category === categoryId) {
+                    el.classList.add('highlighted');
+                    el.classList.remove('dimmed');
+                } else {
+                    el.classList.add('dimmed');
+                    el.classList.remove('highlighted');
+                }
+            });
+
+        }
+
+        // Logic Modal
+        function openModal(el) {
+            currentElementNum = el.num;
+            
+            // Fill data
+            document.getElementById('mSymbol').innerText = el.sym;
+            document.getElementById('mSymbol').style.color = `var(--${el.cat === 'unknown' ? 'text-color' : el.cat.replace('cat-', '')})`;
+            document.getElementById('mSymbol').style.borderColor = `var(--${el.cat === 'unknown' ? 'text-color' : el.cat.replace('cat-', '')})`;
+            
+            document.getElementById('mNameLatin').innerText = el.name;
+            document.getElementById('mNameVN').innerText = el.name_vi;
+            document.getElementById('mAtomicNum').innerText = el.num;
+            document.getElementById('mMass').innerText = el.mass;
+            document.getElementById('mElectron').innerText = el.el_config;
+            document.getElementById('mElectroneg').innerText = el.en;
+            document.getElementById('mTemp').innerText = `${el.melt} / ${el.boil}`;
+            
+            // Dịch loại nguyên tố sang tiếng Việt
+            const catMap = {
+                "alkali-metal": "Kim loại kiềm",
+                "alkaline-earth-metal": "Kim loại kiềm thổ",
+                "transition-metal": "Kim loại chuyển tiếp",
+                "post-transition-metal": "Kim loại yếu",
+                "metalloid": "Á kim",
+                "reactive-nonmetal": "Phi kim",
+                "noble-gas": "Khí hiếm",
+                "lanthanide": "Họ Lanthan",
+                "actinide": "Họ Actini",
+                "unknown": "Chưa xác định"
+            };
+            document.getElementById('mCategory').innerText = catMap[el.cat] || el.cat;
+
+            // Load Notes từ LocalStorage
+            try {
+                const savedNote = localStorage.getItem(`element_note_${el.num}`);
+                document.getElementById('userNote').value = savedNote ? savedNote : "";
+            } catch(e) {
+                console.error("Lỗi khi truy cập Local Storage:", e);
+                document.getElementById('userNote').value = "Lưu trữ ghi chú tạm thời bị lỗi.";
+            }
+
+
+            modal.classList.add('active');
+        }
+
+        function closeModal() {
+            modal.classList.remove('active');
+        }
+
+        // Đóng khi click ra ngoài popup
+        modal.addEventListener('click', (e) => {
+            if(e.target === modal) closeModal();
+        });
+
+        // Lưu ghi chú
+        function saveNote() {
+            if(currentElementNum !== null) {
+                const content = document.getElementById('userNote').value;
+                try {
+                    localStorage.setItem(`element_note_${currentElementNum}`, content);
+                    
+                    // Hiệu ứng nút bấm
+                    const btn = document.querySelector('.save-btn');
+                    const originalText = btn.innerText;
+                    btn.innerText = "Đã Lưu!";
+                    btn.style.backgroundColor = "#2ecc71"; // Màu xanh lá
+                    
+                    setTimeout(() => {
+                        btn.innerText = originalText;
+                        btn.style.backgroundColor = "var(--highlight)";
+                    }, 1500);
+                } catch(e) {
+                    console.error("Không thể lưu vào Local Storage:", e);
+                    // Thông báo lỗi nhỏ trên UI
+                    const noteSection = document.querySelector('.note-section');
+                    const errorMsg = document.createElement('p');
+                    errorMsg.innerText = "Lỗi: Không thể lưu ghi chú do trình duyệt của bạn chặn Local Storage.";
+                    errorMsg.style.color = 'red';
+                    errorMsg.style.marginTop = '10px';
+                    noteSection.appendChild(errorMsg);
+                }
+            }
+        }
+
+        // Chạy khi tải trang
+        renderTable();
+
+    </script>
+</body>
+</html>
